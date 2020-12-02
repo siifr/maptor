@@ -74,8 +74,6 @@
   </v-app>
 </template>
 <script>
-// const hexImage = require('@/assets/Hex-Pattern-2.png');
-// style="background-image: url(/img/Hex-Pattern-2.cefb0150.png)"
   export default {
     name: 'Grid',
     components: {
@@ -83,7 +81,6 @@
     data: () => ({
       switch1:true,
       mapImage: '',
-      // hexImage: "./../assets/Hex-Pattern-2.png",
       slider: 2,
       
     }), 
