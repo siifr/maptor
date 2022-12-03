@@ -14,7 +14,7 @@
     background-repeat: repeat;
     position: relative;
     height: 100%;
-   
+
   }
   div.grid {
     width: 100vw;
@@ -55,7 +55,7 @@
       flat
       tile
       >
-      
+
       <v-toolbar  style="padding-top: 15px" v-show="!hidden">
         <v-slider
           v-model="slider"
@@ -67,7 +67,7 @@
         <v-switch
           v-model="hexSwitch"
           label="Hex Tile">
-        </v-switch> 
+        </v-switch>
         <v-spacer></v-spacer>
         <v-btn
           icon
@@ -83,14 +83,14 @@
           clearable>
         </v-text-field>
       </v-toolbar>
-    </v-card>   
-    <div class="grid">
+    </v-card>
+    <div class="grid text">
       <div v-for="tile in this.drawMap" :key="mapGrid.indexOf(tile)">
       {{tile}}
       </div>
       <v-img class="map" :height="mapHeight" :width="mapWidth" :src="mapImage" ></v-img>
-      <div 
-        :style="{'background-size': slider + '%'}" 
+      <div
+        :style="{'background-size': slider + '%'}"
         :class="hexSwitch ? 'hex1' : 'hex2'" >
         <v-btn
           class="mx-2"
@@ -104,8 +104,8 @@
           {{ hidden ? 'Show' : 'Hide' }}
         </v-btn>
       </div>
-      <div 
-        :style="{'background-image': 'url('+ mapImage + ');'}" 
+      <div
+        :style="{'background-image': 'url('+ mapImage + ');'}"
         class="map" id="map">
       </div>
     </div>
@@ -125,8 +125,8 @@
       mapHeight: "100%",
       mapWidth: "100%",
       slider: 2,
-  
-    }), 
+
+    }),
     computed: {},
     created() {
        this.mapGrid = this.drawMap({map_x: 5, map_y: 5});
@@ -147,7 +147,7 @@
           console.log('x: ', map_x, 'y: ', map_y);
 
           while(mapGrid.length < map_x) {
-            
+
             while(mapRow.length < map_y) {
               mapRow.push(this.makeTile(mapGrid.length, mapRow.length + 1))
               mapGrid.push(mapRow)
@@ -187,9 +187,9 @@
       },
 
       rotateImage() {
-        const map = document.getElementById('map');
-        
-        
+        // const map = document.getElementById('map');
+
+
         // Goal:
         // Create ability to move background image around if too large.
         // Currently using the "cover" property to display "map"
@@ -198,13 +198,6 @@
         // changing the repeated "hex pattern" into
         //individual images that user can interact with
 
-        // I am also a newb to coding.
-        // so this'll be fun
-
-        this.rotation = (this.rotation+90)%360;
-        map.className = "rotate"+this.rotation;
-
-        // console.log(string, map.style.transform)
       },
     },
   }
