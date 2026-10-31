@@ -3,19 +3,6 @@
   body {
     overflow:hidden;
   }
-  div.hex1 {
-    background-image: url(./../assets/Hex-Pattern-2.png);
-    position: relative;
-    background-repeat: repeat;
-    height: 100%;
-  }
-  div.hex2 {
-    background-image: url(./../assets/Hex-Pattern.png);
-    background-repeat: repeat;
-    position: relative;
-    height: 100%;
-   
-  }
   div.grid {
     width: 100vw;
     height: 100%;
@@ -29,6 +16,30 @@
     position: absolute;
     background-size: contain;
   }
+  svg.hex-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hex-tile {
+    fill: rgba(255,255,255, 0.35);
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 1;
+  }
+  .hex-tile.alt {
+    fill: rgba(33, 150, 243, 0.35);
+  }
+  .hex-label {
+    font-size: 20px;
+    fill: #ffffff;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
+    user-select: none;
+    font-weight: bold;
+  }
 </style>
 
 <template>
@@ -38,19 +49,34 @@
       absolute
       dark
       flat
-      tile>
+      tile
+      :style="{ display: headerHidden ? 'none' : 'block' }">
       <v-toolbar  style="padding-top: 15px">
         <v-slider
-          v-model="slider"
-          min="2"
-          max="20"
-          step="0.5"
+          v-model="hexRadius"
+          min="10"
+          max="140"
+          step="5"
+          ticks>
+        </v-slider>
+        <v-slider
+          v-model="imageScale"
+          min="10"
+          max="200"
+          step="10"
+          ticks>
+        </v-slider>
+        <v-slider
+          v-model="imageRotation"
+          min="0"
+          max="360"
+          step="5"
           ticks>
         </v-slider>
         <v-switch
           v-model="switch1"
           label="Hex Tile">
-        </v-switch> 
+        </v-switch>
         <v-spacer></v-spacer>
         <v-text-field
           v-model="mapImage"
@@ -59,18 +85,47 @@
           clearable>
         </v-text-field>
       </v-toolbar>
-    </v-card>   
+    </v-card>
     <div class="grid">
-      <v-img class="map" :src="mapImage" ></v-img>
-      <div 
-        :style="{'background-size': slider + '%'}" 
-        :class="switch1 ? 'hex1' : 'hex2'" >
+      <div
+        v-if="mapImage"
+        class="map"
+        :style="{
+          backgroundImage: 'url(' + mapImage + ')',
+          backgroundSize: imageScale + '%',
+          backgroundPosition: 'center',
+          transform: 'rotate(' + imageRotation + 'deg)',
+          transformOrigin: 'center',
+        }">
       </div>
-      <div 
-        :style="{'background-image': 'url('+ mapImage + ');'}" 
-        class="map">
-      </div>
+      <svg class="hex-grid">
+        <path
+          v-for="hex in hexes"
+          :key="hex.id"
+          class="hex-tile"
+          :class="{ alt: !switch1 }"
+          :d="hex.d">
+        </path>
+        <text
+          v-for="hex in hexes"
+          :key="hex.id"
+          class="hex-label"
+          :x="hex.cx"
+          :y="hex.cy"
+          :style="{ fontSize: hexFontSize + 'px' }">
+          {{ hex.label }}
+        </text>
+      </svg>
     </div>
+    <v-btn
+      fixed
+      bottom
+      right
+      fab
+      icon
+      @click="headerHidden = !headerHidden">
+      <v-icon>{{ headerHidden ? 'menu' : 'close' }}</v-icon>
+    </v-btn>
   </v-app>
 </template>
 <script>
@@ -79,13 +134,85 @@
     components: {
     },
     data: () => ({
-      switch1:true,
+      switch1: true,
       mapImage: '',
-      slider: 2,
-      
-    }), 
-    computed: {
+      hexRadius: 60,
+      imageScale: 100,
+      imageRotation: 0,
+      headerHidden: false,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
 
-    }
+    }),
+    computed: {
+      hexFontSize() {
+        return Math.max(this.hexRadius * 0.3, 6);
+      },
+      hexes() {
+        const r = this.hexRadius;
+        const sqrt3 = Math.sqrt(3);
+        const hexes = [];
+        const width = this.windowWidth;
+        const height = this.windowHeight;
+        let col = 0;
+        let cx = 0;
+        while (cx - r <= width) {
+          const yOffset = col % 2 === 1 ? (sqrt3 / 2) * r : 0;
+          const columnHexes = [];
+          let cy = yOffset;
+          while (cy - (sqrt3 / 2) * r <= height) {
+            const d = [
+              `M ${cx + r} ${cy}`,
+              `L ${cx + r / 2} ${cy - (sqrt3 / 2) * r}`,
+              `L ${cx - r / 2} ${cy - (sqrt3 / 2) * r}`,
+              `L ${cx - r} ${cy}`,
+              `L ${cx - r / 2} ${cy + (sqrt3 / 2) * r}`,
+              `L ${cx + r / 2} ${cy + (sqrt3 / 2) * r}`,
+              'Z',
+            ].join(' ');
+            columnHexes.push({
+              id: col + '-' + columnHexes.length,
+              col: col,
+              row: columnHexes.length,
+              cx: cx,
+              cy: cy,
+              d: d,
+            });
+            cy += sqrt3 * r;
+          }
+          // label rows like a chessboard: bottom row of the column = rank 1
+          const totalRows = columnHexes.length;
+          columnHexes.forEach((hex, index) => {
+            hex.label = this.columnLetter(hex.col) + (totalRows - index);
+          });
+          hexes.push.apply(hexes, columnHexes);
+          col += 1;
+          cx = col * (3 / 2) * r;
+        }
+        return hexes;
+      },
+    },
+    mounted() {
+      window.addEventListener('resize', this.onResize);
+    },
+    beforeDestroy() {
+      window.removeEventListener('resize', this.onResize);
+    },
+    methods: {
+      columnLetter(colIndex) {
+        let n = colIndex + 1;
+        let letter = '';
+        while (n > 0) {
+          const m = (n - 1) % 26;
+          letter = String.fromCharCode(65 + m) + letter;
+          n = Math.floor((n - 1) / 26);
+        }
+        return letter;
+      },
+      onResize() {
+        this.windowWidth = window.innerWidth;
+        this.windowHeight = window.innerHeight;
+      },
+    },
   }
 </script>
