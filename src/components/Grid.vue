@@ -3,6 +3,9 @@
   body {
     overflow:hidden;
   }
+  header {
+    z-index: 99999;
+  }
   div.grid {
     width: 100vw;
     height: 100%;
@@ -29,7 +32,7 @@
     stroke-width: 1;
   }
   .hex-tile.alt {
-    fill: rgba(33, 150, 243, 0.35);
+    fill: rgba(76, 175, 80, 0.35);
   }
   .hex-label {
     font-size: 20px;
@@ -73,9 +76,10 @@
           step="5"
           ticks>
         </v-slider>
+
         <v-switch
           v-model="switch1"
-          label="Hex Tile">
+          :label="switch1 ? 'Night Mode' : 'Day Mode'">
         </v-switch>
         <v-spacer></v-spacer>
         <v-text-field
@@ -83,9 +87,23 @@
           solo
           label="Image URL"
           clearable>
+
         </v-text-field>
+        <v-btn style="top: -15px;" href="https://modernarmor.worldoftanks.com/en/cms/guides/maps/" target="_blank">
+            Maps
+        </v-btn>
       </v-toolbar>
     </v-card>
+    <v-btn
+        fixed
+        top
+        right
+        fab
+        icon
+        @click="headerHidden = !headerHidden"
+        :style="headerHidden ? { top: '0' } : { top: '75px' }">
+      <v-icon>{{ headerHidden ? 'menu' : 'hide' }}</v-icon>
+    </v-btn>
     <div class="grid">
       <div
         v-if="mapImage"
@@ -117,15 +135,7 @@
         </text>
       </svg>
     </div>
-    <v-btn
-      fixed
-      bottom
-      right
-      fab
-      icon
-      @click="headerHidden = !headerHidden">
-      <v-icon>{{ headerHidden ? 'menu' : 'close' }}</v-icon>
-    </v-btn>
+
   </v-app>
 </template>
 <script>
